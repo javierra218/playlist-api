@@ -3,6 +3,7 @@ package com.quipux.playlist.controller;
 import com.quipux.playlist.dto.SongDTO;
 import com.quipux.playlist.model.Song;
 import com.quipux.playlist.service.SongService;
+import org.modelmapper.ModelMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +15,18 @@ import java.util.List;
 public class SongController {
 
     private final SongService songService;
+    private final ModelMapper modelMapper;
 
-    public SongController(SongService songService) {
+    public SongController(SongService songService, ModelMapper modelMapper) {
         this.songService = songService;
+        this.modelMapper = modelMapper;
     }
 
     @PostMapping
     public ResponseEntity<SongDTO> addSong(@Valid @RequestBody SongDTO songDTO) {
-        Song song = convertToEntity(songDTO); // Convertir DTO a entidad
+        Song song = modelMapper.map(songDTO, Song.class);
         Song savedSong = songService.addSong(song);
-        SongDTO response = convertToDTO(savedSong); // Convertir la entidad a DTO para la respuesta
+        SongDTO response = modelMapper.map(savedSong, SongDTO.class);  
         return ResponseEntity.status(201).body(response);
     }
 
@@ -31,8 +34,8 @@ public class SongController {
     public ResponseEntity<List<SongDTO>> getAllSongs() {
         List<Song> songs = songService.getAllSongs();
         List<SongDTO> response = songs.stream()
-                .map(this::convertToDTO)
-                .toList();
+                                      .map(song -> modelMapper.map(song, SongDTO.class))
+                                      .toList();
         return ResponseEntity.ok(response);
     }
 
@@ -40,29 +43,8 @@ public class SongController {
     public ResponseEntity<List<SongDTO>> getSongsByArtist(@PathVariable String artist) {
         List<Song> songs = songService.getSongsByArtist(artist);
         List<SongDTO> response = songs.stream()
-                .map(this::convertToDTO)
-                .toList();
+                                      .map(song -> modelMapper.map(song, SongDTO.class))
+                                      .toList();
         return ResponseEntity.ok(response);
-    }
-
-    // Métodos de conversión entre DTOs y entidades
-    private Song convertToEntity(SongDTO dto) {
-        Song song = new Song();
-        song.setTitulo(dto.getTitulo());
-        song.setArtista(dto.getArtista());
-        song.setAlbum(dto.getAlbum());
-        song.setAnno(dto.getAnno());
-        song.setGenero(dto.getGenero());
-        return song;
-    }
-
-    private SongDTO convertToDTO(Song song) {
-        SongDTO dto = new SongDTO();
-        dto.setTitulo(song.getTitulo());
-        dto.setArtista(song.getArtista());
-        dto.setAlbum(song.getAlbum());
-        dto.setAnno(song.getAnno());
-        dto.setGenero(song.getGenero());
-        return dto;
     }
 }
