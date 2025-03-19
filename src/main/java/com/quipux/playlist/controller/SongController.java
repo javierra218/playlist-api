@@ -26,7 +26,7 @@ public class SongController {
     public ResponseEntity<SongDTO> addSong(@Valid @RequestBody SongDTO songDTO) {
         Song song = modelMapper.map(songDTO, Song.class);
         Song savedSong = songService.addSong(song);
-        SongDTO response = modelMapper.map(savedSong, SongDTO.class);  
+        SongDTO response = modelMapper.map(savedSong, SongDTO.class);
         return ResponseEntity.status(201).body(response);
     }
 
@@ -34,8 +34,8 @@ public class SongController {
     public ResponseEntity<List<SongDTO>> getAllSongs() {
         List<Song> songs = songService.getAllSongs();
         List<SongDTO> response = songs.stream()
-                                      .map(song -> modelMapper.map(song, SongDTO.class))
-                                      .toList();
+                .map(song -> modelMapper.map(song, SongDTO.class))
+                .toList();
         return ResponseEntity.ok(response);
     }
 
@@ -43,8 +43,8 @@ public class SongController {
     public ResponseEntity<List<SongDTO>> getSongsByArtist(@PathVariable String artist) {
         List<Song> songs = songService.getSongsByArtist(artist);
         List<SongDTO> response = songs.stream()
-                                      .map(song -> modelMapper.map(song, SongDTO.class))
-                                      .toList();
+                .map(song -> modelMapper.map(song, SongDTO.class))
+                .toList();
         return ResponseEntity.ok(response);
     }
 }
