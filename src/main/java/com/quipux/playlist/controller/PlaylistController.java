@@ -2,6 +2,7 @@ package com.quipux.playlist.controller;
 
 import com.quipux.playlist.dto.PlaylistDTO;
 import com.quipux.playlist.model.Playlist;
+import com.quipux.playlist.model.Song;
 import com.quipux.playlist.service.PlaylistService;
 import org.modelmapper.ModelMapper;
 import jakarta.validation.Valid;
@@ -26,8 +27,22 @@ public class PlaylistController {
     @PostMapping
     public ResponseEntity<PlaylistDTO> createPlaylist(@Valid @RequestBody PlaylistDTO playlistDTO) {
         Playlist playlist = modelMapper.map(playlistDTO, Playlist.class);
+
+        // crear la playlist
         Playlist createdPlaylist = playlistService.createPlaylist(playlist);
-        PlaylistDTO response = modelMapper.map(createdPlaylist, PlaylistDTO.class);
+
+        // hay canciones en el DTO, agregarlas a la playlist
+        if (playlistDTO.getCanciones() != null && !playlistDTO.getCanciones().isEmpty()) {
+            playlistDTO.getCanciones().forEach(songDTO -> {
+                Song song = modelMapper.map(songDTO, Song.class);
+                playlistService.addSongToPlaylist(createdPlaylist.getId(), song);
+            });
+        }
+
+        // playlist actualizada con las canciones
+        Playlist updatedPlaylist = playlistService.getPlaylistByName(createdPlaylist.getNombre())
+                .orElse(createdPlaylist);
+        PlaylistDTO response = modelMapper.map(updatedPlaylist, PlaylistDTO.class);
         return ResponseEntity.status(201).body(response);
     }
 
@@ -35,8 +50,8 @@ public class PlaylistController {
     public ResponseEntity<List<PlaylistDTO>> getAllPlaylists() {
         List<Playlist> playlists = playlistService.getAllPlaylists();
         List<PlaylistDTO> response = playlists.stream()
-                                              .map(playlist -> modelMapper.map(playlist, PlaylistDTO.class))
-                                              .toList();
+                .map(playlist -> modelMapper.map(playlist, PlaylistDTO.class))
+                .toList();
         return ResponseEntity.ok(response);
     }
 

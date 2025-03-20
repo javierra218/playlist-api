@@ -17,8 +17,9 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public Song addSong(Song song) {
-        // Verificar si ya existe una canción con el mismo título y artista
-        if (songRepository.findByArtistaAndTitulo(song.getArtista(), song.getTitulo()).isPresent()) {
+        // ya existe una canción con el mismo título y artista
+        List<Song> existingSongs = songRepository.findByArtistaAndTitulo(song.getArtista(), song.getTitulo());
+        if (!existingSongs.isEmpty()) {
             throw new IllegalArgumentException("La canción con este título y artista ya existe");
         }
         return songRepository.save(song);

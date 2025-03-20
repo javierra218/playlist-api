@@ -5,10 +5,16 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table
 @Data
+@EqualsAndHashCode(exclude = "playlists")
+@ToString(exclude = "playlists")
 public class Song {
 
     @Id
@@ -34,7 +40,24 @@ public class Song {
     @Size(max = 50, message = "El género no puede superar los 50 caracteres")
     private String genero;
 
-    @ManyToOne
-    @JoinColumn(name = "playlist_id")
-    private Playlist playlist;
+    @ManyToMany(mappedBy = "canciones")
+    private Set<Playlist> playlists = new HashSet<>();
+
+    public void addPlaylist(Playlist playlist) {
+        if (playlists != null) {
+            playlists.add(playlist);
+            if (!playlist.getCanciones().contains(this)) {
+                playlist.getCanciones().add(this);
+            }
+        }
+    }
+
+    public void removePlaylist(Playlist playlist) {
+        if (playlists != null) {
+            playlists.remove(playlist);
+            if (playlist.getCanciones().contains(this)) {
+                playlist.getCanciones().remove(this);
+            }
+        }
+    }
 }

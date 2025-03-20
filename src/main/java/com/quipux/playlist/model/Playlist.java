@@ -4,12 +4,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import java.util.List;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table
 @Data
+@EqualsAndHashCode(exclude = "canciones")
+@ToString(exclude = "canciones")
 public class Playlist {
 
     @Id
@@ -25,6 +29,21 @@ public class Playlist {
     @Column(length = 500)
     private String descripcion;
 
-    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Song> canciones;
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(name = "playlist_songs", joinColumns = @JoinColumn(name = "playlist_id"), inverseJoinColumns = @JoinColumn(name = "song_id"))
+    private Set<Song> canciones = new HashSet<>();
+
+    public void addSong(Song song) {
+        if (song != null && !canciones.contains(song)) {
+            canciones.add(song);
+            song.addPlaylist(this);
+        }
+    }
+
+    public void removeSong(Song song) {
+        if (song != null && canciones.contains(song)) {
+            canciones.remove(song);
+            song.removePlaylist(this);
+        }
+    }
 }
