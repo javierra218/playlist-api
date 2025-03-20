@@ -73,7 +73,8 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Transactional
     public void deletePlaylist(Long id) {
         playlistRepository.findById(id).ifPresent(playlist -> {
-            playlist.getCanciones().forEach(song -> song.removePlaylist(playlist));
+            Set<Song> canciones = new HashSet<>(playlist.getCanciones());
+            canciones.forEach(song -> song.removePlaylist(playlist));
             playlistRepository.delete(playlist);
         });
     }
